@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from ..agent.state import AgentState
     from ..hooks.registry import BaseHookEvent, HookCallback, HookRegistry
     from ..models.model import Model
+    from ..storage.storage import Storage
     from ..tools._caller import _ToolCaller
     from ..tools.registry import ToolRegistry
     from ._snapshot import Snapshot, SnapshotField, SnapshotPreset
@@ -75,6 +76,11 @@ class LocalAgent(Protocol):
     @property
     def session_id(self) -> str:
         """Identifier for the current conversation session."""
+        ...
+
+    @property
+    def storage(self) -> Storage | None:
+        """Default storage backend for agent subsystems."""
         ...
 
     def add_hook(

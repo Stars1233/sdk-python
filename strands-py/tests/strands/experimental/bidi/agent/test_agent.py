@@ -284,6 +284,20 @@ def test_bidi_agent_session_id_delegates_to_session_manager(mock_model):
     assert agent.session_id == "test-session"
 
 
+def test_bidi_agent_storage_defaults_to_none(mock_model):
+    agent = BidiAgent(model=mock_model)
+
+    assert agent.storage is None
+
+
+def test_bidi_agent_storage_returns_configured_value(mock_model):
+    storage = unittest.mock.Mock()
+
+    agent = BidiAgent(model=mock_model, storage=storage)
+
+    assert agent.storage is storage
+
+
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="BedrockNovaSonicModel is only supported for Python 3.12+")
 @pytest.mark.parametrize("options", [{}, {"model": None}])
 def test_bidi_agent_init_with_default_model(options):

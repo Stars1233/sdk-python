@@ -34,6 +34,7 @@ from ....hooks import (
 )
 from ....hooks.registry import TEvent
 from ....interrupt import _InterruptState
+from ....storage import Storage
 from ....tools._caller import _ToolCaller
 from ....tools.executors import ConcurrentToolExecutor
 from ....tools.executors._executor import ToolExecutor
@@ -103,6 +104,7 @@ class BidiAgent(LocalAgent):
         state: AgentState | dict | None = None,
         session_manager: "SessionManager[LocalAgent] | None" = None,
         tool_executor: ToolExecutor | None = None,
+        storage: Storage | None = None,
         **kwargs: Any,
     ):
         """Initialize bidirectional agent.
@@ -123,6 +125,12 @@ class BidiAgent(LocalAgent):
             session_manager: Manager for handling agent sessions including conversation history and state.
                 If provided, enables session-based persistence and state management.
             tool_executor: Definition of tool execution strategy (e.g., sequential, concurrent, etc.).
+            storage: Default storage backend for agent subsystems.
+                When provided, subsystems that do not have their own explicit storage
+                (e.g., SessionManager) resolve from this value. Each subsystem
+                auto-namespaces under its own prefix to avoid key collisions.
+                Storage specified directly on a subsystem always takes precedence over
+                this agent-level default. Defaults to None.
             **kwargs: Additional configuration for future extensibility.
 
         Raises:
@@ -144,6 +152,7 @@ class BidiAgent(LocalAgent):
 
         _, self._system_prompt_content = split_system_prompt(system_prompt)
         self.messages = messages if messages is not None else []
+        self._storage: Storage | None = storage
 
         # Agent identification
         self.agent_id = _identifier.validate(agent_id or _DEFAULT_AGENT_ID, _identifier.Identifier.AGENT)
@@ -258,6 +267,11 @@ class BidiAgent(LocalAgent):
     def session_id(self) -> str:
         """Get the conversation session identifier."""
         return self._session_id
+
+    @property
+    def storage(self) -> Storage | None:
+        """Default storage backend for agent subsystems."""
+        return self._storage
 
     def add_hook(
         self,

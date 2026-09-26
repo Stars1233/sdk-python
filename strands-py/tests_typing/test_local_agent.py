@@ -8,6 +8,7 @@ from strands.hooks import AfterToolCallEvent, AgentInitializedEvent, BeforeToolC
 from strands.session.repository_session_manager import RepositorySessionManager
 from strands.session.session_manager import SessionManager
 from strands.session.snapshot_session_manager import SnapshotSessionManager
+from strands.storage import Storage
 from strands.types.content import Message
 from strands.types.session import SessionAgent
 
@@ -103,6 +104,14 @@ def snapshot_local_agent(agent: Agent, bidi_agent: BidiAgent, local_agent: Local
         assert_type(snapshot, Snapshot)
         shared.take_snapshot(include=["messages", "state"], exclude=["state"], app_data={"key": "value"})
         shared.load_snapshot(snapshot)
+
+
+def storage_local_agent(storage: Storage) -> None:
+    for shared in (Agent(storage=storage), BidiAgent(storage=storage)):
+        assert_type(shared.storage, Storage | None)
+    local_agent: LocalAgent = BidiAgent(storage=storage)
+    assert_type(local_agent.storage, Storage | None)
+    local_agent.storage = storage  # type: ignore[misc]
 
 
 def persist_local_agent(manager: RepositorySessionManager, agent: LocalAgent, message: Message) -> None:
